@@ -26,7 +26,7 @@ public class LongProcessBroker {
     processBuilder.redirectErrorStream(true);
     try {
       Process process = processBuilder.start();
-      try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "windows-31j"))) {
+      try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
         String s;
         while (process.isAlive()) {
           while ((s = bufferedReader.readLine()) != null) {
@@ -34,7 +34,6 @@ public class LongProcessBroker {
             List<String> unmodifiableList = Collections.unmodifiableList(strings);
             for (ProcessStreamChangeEventListener listener : listeners) {
               listener.onStreamChange(new ProcessStreamChangeEvent(this, unmodifiableList, s));
-
             }
           }
         }

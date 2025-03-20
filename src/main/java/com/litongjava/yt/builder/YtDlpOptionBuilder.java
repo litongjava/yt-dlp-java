@@ -108,4 +108,37 @@ public class YtDlpOptionBuilder {
   public YtDlpOption build() {
     return new YtDlpOption(stringBuilder, url);
   }
+
+  public YtDlpOptionBuilder writeSub() {
+    append("--write-sub");
+    return this;
+  }
+
+  public YtDlpOptionBuilder writeAutoSub() {
+    append("--write-auto-sub");
+    return this;
+  }
+
+  public YtDlpOptionBuilder subLang(String language) {
+    append("--sub-lang");
+    append(language);
+    return this;
+  }
+
+  public YtDlpOptionBuilder skipDownload() {
+    append("--skip-download");
+    return this;
+  }
+
+  public YtDlpOptionBuilder quiet() {
+    append("--quiet");
+    return this;
+  }
+
+  public YtDlpOptionBuilder convertSubs(String string) {
+    append("--convert-subs");
+    append(string);
+    return this;
+  }
+
 }

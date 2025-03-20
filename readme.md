@@ -53,26 +53,47 @@ package com.litongjava.yt;
 import com.litongjava.yt.broker.LongProcessBroker;
 import com.litongjava.yt.builder.YtDlpOption;
 import com.litongjava.yt.builder.YtDlpOptionBuilder;
+import com.litongjava.yt.utils.SnowflakeId;
 
-public class Main {
+public class YtDlpTest {
 
   public static void main(String[] args) {
-    downloadMp3();
+    downlodSubtitle();
+    //downloadMp3();
     // listFormat();
     // test1();
     // test2();
   }
 
-  private static void downloadMp3() {
-    // Example: Download the video as audio and convert it to mp3 format
-    YtDlpOption options = new YtDlpOptionBuilder()
-        .url("https://www.youtube.com/watch?v=PnHMAVXpKg8")
-        .audio()                   // Enable audio extraction
-        .audioFormat("mp3")        // Set the output audio format to mp3
-        .build();
+  private static void downlodSubtitle() {
+    long id = SnowflakeId.id();
+    String url = "https://www.youtube.com/watch?v=AMCUqgu_cTM";
+    YtDlpOption options = new YtDlpOptionBuilder().url(url)
+        //
+        .output("downloads/" + id + "/%(title)s.%(ext)s")
+        //
+        .writeSub() // or writeAutoSub()
+        //.subLang("en") //There are no subtitles for the requested languages
+        .skipDownload().build();
 
     // Call the download audio method
-    YtDlp.execute(options);
+    String result = YtDlp.execute(options);
+    System.out.println("reuslt:");
+    System.out.println(result);
+  }
+
+  private static void downloadMp3() {
+    // Example: Download the video as audio and convert it to mp3 format
+    long id = SnowflakeId.id();
+    String url = "https://www.youtube.com/watch?v=AMCUqgu_cTM";
+    YtDlpOption options = new YtDlpOptionBuilder().url(url).audio() // Enable audio extraction
+        .audioFormat("mp3") // Set the output audio format to mp3
+        .output("downloads/" + id + "/%(title)s.%(ext)s").build();
+
+    // Call the download audio method
+    String result = YtDlp.execute(options);
+    System.out.println("reuslt:");
+    System.out.println(result);
   }
 
   private static void listFormat() {
@@ -90,8 +111,7 @@ public class Main {
 
   private static void test1() {
     YtDlpOptionBuilder ytDlpOptionBuilder = new YtDlpOptionBuilder();
-    ytDlpOptionBuilder.url("https://www.youtube.com/watch?v=PnHMAVXpKg8")
-                      .output("%(title)s.%(ext)s");
+    ytDlpOptionBuilder.url("https://www.youtube.com/watch?v=PnHMAVXpKg8").output("%(title)s.%(ext)s");
     YtDlpOption options = ytDlpOptionBuilder.build();
     YtDlp.execute(options);
   }

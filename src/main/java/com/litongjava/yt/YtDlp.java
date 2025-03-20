@@ -57,6 +57,14 @@ public class YtDlp {
           }
           System.out.println("Download completed: " + file.getAbsolutePath());
         }
+
+        // add permissions
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.startsWith("linux")) {
+          if (!file.setExecutable(true)) {
+            System.err.println("Failed to set executable permission for " + file.getAbsolutePath());
+          }
+        }
       } else {
         System.err.println("Download failed, server returned response code: " + responseCode);
       }
@@ -155,7 +163,7 @@ public class YtDlp {
   private static String execute(String option) {
     StringBuffer stringBuffer = new StringBuffer();
     YtDlp.downloadYtDlp();
-    YtDlp.runLong(option, event -> stringBuffer.append(event.getChangedString()).append("\r\n"));
+    YtDlp.runLong(option, event -> log.info(event.getChangedString()));
     return stringBuffer.toString();
   }
 
