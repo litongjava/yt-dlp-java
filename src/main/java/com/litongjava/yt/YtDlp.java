@@ -59,11 +59,8 @@ public class YtDlp {
         }
 
         // add permissions
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.startsWith("linux")) {
-          if (!file.setExecutable(true)) {
-            System.err.println("Failed to set executable permission for " + file.getAbsolutePath());
-          }
+        if (!file.setExecutable(true)) {
+          System.err.println("Failed to set executable permission for " + file.getAbsolutePath());
         }
       } else {
         System.err.println("Download failed, server returned response code: " + responseCode);
