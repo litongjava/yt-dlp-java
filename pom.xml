@@ -24,6 +24,12 @@
       <artifactId>logback-classic</artifactId>
       <version>1.2.3</version>
     </dependency>
+    
+    <dependency>
+      <groupId>com.litongjava</groupId>
+      <artifactId>tio-utils</artifactId>
+      <version>3.7.3.v20250701-RELEASE</version>
+    </dependency>
 
     <dependency>
       <groupId>org.projectlombok</groupId>
