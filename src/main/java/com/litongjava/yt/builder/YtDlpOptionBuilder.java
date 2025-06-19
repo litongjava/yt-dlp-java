@@ -141,4 +141,10 @@ public class YtDlpOptionBuilder {
     return this;
   }
 
+  public YtDlpOptionBuilder format(String format) {
+    append("-f");
+    append(format);
+    return this;
+  }
+
 }

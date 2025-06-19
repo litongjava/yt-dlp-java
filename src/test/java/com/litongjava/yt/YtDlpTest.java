@@ -7,10 +7,24 @@ import com.litongjava.yt.utils.SnowflakeId;
 
 public class YtDlpTest {
 
+  private void downloadMp3() {
+    // Example: Download the video as audio and convert it to mp3 format
+    long id = SnowflakeId.id();
+    String url = "https://www.youtube.com/watch?v=AMCUqgu_cTM";
+    YtDlpOption options = new YtDlpOptionBuilder().url(url).audio() // Enable audio extraction
+        .audioFormat("mp3") // Set the output audio format to mp3
+        .output("downloads/" + id + "/%(title)s.%(ext)s").build();
+
+    // Call the download audio method
+    String result = YtDlp.execute(options);
+    System.out.println("reuslt:");
+    System.out.println(result);
+  }
+
   public static void main(String[] args) {
-    downlodSubtitle();
+    //downlodSubtitle();
     //downloadMp3();
-    // listFormat();
+    //listFormat();
     // test1();
     // test2();
   }
@@ -25,20 +39,6 @@ public class YtDlpTest {
         .writeSub() // or writeAutoSub()
         //.subLang("en") //There are no subtitles for the requested languages
         .skipDownload().build();
-
-    // Call the download audio method
-    String result = YtDlp.execute(options);
-    System.out.println("reuslt:");
-    System.out.println(result);
-  }
-
-  private static void downloadMp3() {
-    // Example: Download the video as audio and convert it to mp3 format
-    long id = SnowflakeId.id();
-    String url = "https://www.youtube.com/watch?v=AMCUqgu_cTM";
-    YtDlpOption options = new YtDlpOptionBuilder().url(url).audio() // Enable audio extraction
-        .audioFormat("mp3") // Set the output audio format to mp3
-        .output("downloads/" + id + "/%(title)s.%(ext)s").build();
 
     // Call the download audio method
     String result = YtDlp.execute(options);

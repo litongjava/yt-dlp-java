@@ -13,12 +13,31 @@ import com.litongjava.yt.builder.YtDlpOptionBuilder;
 
 public class YtDlpUtils {
 
-  public static final String DOWNLOAD_FOLDER = "downloads";
+  public static final String URL_TEMPLATE = "https://www.youtube.com/watch?v=%s";
+  public static final String DOWNLOAD_FOLDER = "download";
+
+  public static File downloadMp4(String videoId, boolean quiet) {
+    String url = String.format(URL_TEMPLATE, videoId);
+    String folder = DOWNLOAD_FOLDER + "/" + videoId + "/mp4";
+    String output = folder + "/%(title)s.%(ext)s";
+
+    YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url)
+        // 优先 mp4 视频+音频，否则回退到 mp4
+        .format("bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4").output(output);
+
+    if (quiet) {
+      builder.quiet();
+    }
+
+    YtDlpOption options = builder.build();
+    YtDlp.execute(options);
+
+    File[] files = new File(folder).listFiles();
+    return (files != null && files.length > 0) ? files[0] : null;
+  }
 
   public static File downloadMp3(String videoId, boolean quiet) {
-    String url = "https://www.youtube.com/watch?v=%s";
-    url = String.format(url, videoId);
-
+    String url = String.format(URL_TEMPLATE, videoId);
     String folder = DOWNLOAD_FOLDER + "/" + videoId + "/mp3";
     String output = folder + "/%(title)s.%(ext)s";
 
@@ -37,8 +56,7 @@ public class YtDlpUtils {
   }
 
   public static String downlodSubtitle(String videoId, boolean quiet) {
-    String url = "https://www.youtube.com/watch?v=%s";
-    url = String.format(url, videoId);
+    String url = String.format(URL_TEMPLATE, videoId);
     String folder = DOWNLOAD_FOLDER + "/" + videoId + "/sub";
     String output = folder + "/%(title)s.%(ext)s";
     YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).output(output).writeSub().skipDownload();

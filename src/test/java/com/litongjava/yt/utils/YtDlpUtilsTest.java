@@ -18,5 +18,12 @@ public class YtDlpUtilsTest {
     System.out.println(file.getName());
     System.out.println(file.exists());
   }
+  
+  @Test
+  public void downloadMp4() {
+    File file = YtDlpUtils.downloadMp4("AMCUqgu_cTM", true);
+    System.out.println(file.getName());
+    System.out.println(file.exists());
+  }
 
 }

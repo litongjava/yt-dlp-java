@@ -44,3 +44,6 @@ macos-amd64/
 macos-arm64/
 win-amd64/
 *.wav
+yt-dlp.exe
+yt-dlp.exe
+download/
