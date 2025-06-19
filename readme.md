@@ -69,7 +69,7 @@ https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
 ```
 ./yt-dlp.exe  -x  --audio-format  mp3  --output  "download/AMCUqgu_cTM/mp3/%(title)s.%(ext)s"  --quiet  https://www.youtube.com/watch?v=AMCUqgu_cTM
 ```
-### 示例代码详解
+### 示例代码
 ```
     <dependency>
       <groupId>com.litongjava</groupId>
@@ -81,153 +81,77 @@ https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
 下面的示例代码展示了如何使用 yt-dlp-java 的各项功能。代码中提供了多个测试方法，每个方法均实现了不同的下载功能。
 
 ```java
-package com.litongjava.yt;
+package com.litongjava.yt.utils;
 
-import com.litongjava.yt.broker.LongProcessBroker;
-import com.litongjava.yt.builder.YtDlpOption;
-import com.litongjava.yt.builder.YtDlpOptionBuilder;
-import com.litongjava.yt.utils.SnowflakeId;
+import java.io.File;
+import java.io.IOException;
 
-public class YtDlpTest {
+import org.junit.Test;
 
-  public static void main(String[] args) {
-    downlodSubtitle();
-    // downloadMp3();
-    // listFormat();
-    // test1();
-    // test2();
+import com.litongjava.tio.utils.commandline.ProcessResult;
+import com.litongjava.yt.YtDlp;
+
+public class YtDlpUtilsTest {
+
+  @Test
+  public void downlodSubtitle() {
+    try {
+      ProcessResult result = YtDlpUtils.downlodSubtitle("AMCUqgu_cTM", true);
+      System.out.println(result.getOutput());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
-  /**
-   * 下载字幕方法
-   *
-   * 该方法主要用于下载视频的字幕文件。通过 builder 设置目标 URL、输出文件模板、字幕下载参数（例如调用 writeSub() 下载字幕）。
-   * 如果视频本身不包含指定语言的字幕，可以选择使用 writeAutoSub() 下载自动生成的字幕。
-   * 注意：.subLang("en") 可用于指定字幕语言，但当视频没有相应语言的字幕时，需要去除该设置。
-   */
-  private static void downlodSubtitle() {
-    long id = SnowflakeId.id();
-    String url = "https://www.youtube.com/watch?v=AMCUqgu_cTM";
-    YtDlpOption options = new YtDlpOptionBuilder()
-        .url(url)                                      // 设置目标视频 URL
-        .output("downloads/" + id + "/%(title)s.%(ext)s") // 指定输出文件模板
-        .writeSub()                                    // 启用字幕下载（也可以使用 writeAutoSub() 下载自动字幕）
-        //.subLang("en")                                // 可选：指定字幕语言（注：当该语言字幕不可用时，请勿启用）
-        .skipDownload()                                // 只下载字幕，不下载视频
-        .build();
+  @Test
+  public void downloadMp3() {
+    try {
+      ProcessResult downloadMp3 = YtDlpUtils.downloadMp3("AMCUqgu_cTM", true);
+      File file = downloadMp3.getFile();
+      System.out.println(file);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
-    // 执行 yt-dlp 下载任务，并捕获输出结果
-    String result = YtDlp.execute(options);
-    System.out.println("result:");
-    System.out.println(result);
   }
 
-  /**
-   * 下载音频（mp3格式）方法
-   *
-   * 该方法用于将视频下载为音频文件，并转换成 mp3 格式。通过 builder 启用音频提取，并设置目标输出格式及文件模板。
-   */
-  private static void downloadMp3() {
-    long id = SnowflakeId.id();
-    String url = "https://www.youtube.com/watch?v=AMCUqgu_cTM";
-    YtDlpOption options = new YtDlpOptionBuilder()
-        .url(url)                                      // 设置目标视频 URL
-        .audio()                                       // 启用音频提取
-        .audioFormat("mp3")                            // 指定输出音频格式为 mp3
-        .output("downloads/" + id + "/%(title)s.%(ext)s") // 指定输出文件模板
-        .build();
-
-    // 执行 yt-dlp 下载任务，并捕获输出结果
-    String result = YtDlp.execute(options);
-    System.out.println("result:");
-    System.out.println(result);
+  @Test
+  public void downloadMp4() {
+    ProcessResult result;
+    try {
+      result = YtDlpUtils.downloadMp4("AMCUqgu_cTM", true);
+      if (result.getFile() != null) {
+        File file = result.getFile();
+        System.out.println(file.getName());
+        System.out.println(file.exists());
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
-  /**
-   * 列出视频可用格式的方法
-   *
-   * 该方法调用 yt-dlp 获取目标视频的所有可用下载格式，并将结果打印到控制台。适用于希望查看视频支持的分辨率、编码格式等信息的场景。
-   */
-  private static void listFormat() {
-    String format = YtDlp.getAvailableFormats("https://www.youtube.com/watch?v=PnHMAVXpKg8");
-    System.out.println("format: " + format);
+  @Test
+  public void listFormat() {
+    try {
+      ProcessResult result = YtDlp.getAvailableFormats("https://www.youtube.com/watch?v=PnHMAVXpKg8");
+      System.out.println(result.getStdOut());
+      System.out.println(result.getStdErr());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
   }
 
-  /**
-   * 异步执行示例：实时输出日志
-   *
-   * 该方法利用 LongProcessBroker 启动一个长时间运行的 yt-dlp 进程，同时添加日志事件监听器。
-   * 当进程产生新的日志输出时，会触发事件回调，从而可以实时打印或处理日志信息。
-   */
-  private static void test2() {
-    LongProcessBroker longProcessBroker = new LongProcessBroker("yt-dlp.exe", "https://www.youtube.com/watch?v=PnHMAVXpKg8");
-    longProcessBroker.addProcessStreamChangeEventListener(
-        // 当日志输出发生变化时，打印输出
-        event -> System.out.println("event.getChangedString() = " + event.getChangedString()));
-    longProcessBroker.execute();
-  }
-
-  /**
-   * 基本下载测试方法
-   *
-   * 该方法展示了如何通过构建器简单地设置 URL 和输出模板，并执行 yt-dlp 下载任务。
-   */
-  private static void test1() {
-    YtDlpOptionBuilder ytDlpOptionBuilder = new YtDlpOptionBuilder();
-    ytDlpOptionBuilder.url("https://www.youtube.com/watch?v=PnHMAVXpKg8")
-                      .output("%(title)s.%(ext)s");           // 设置输出模板
-    YtDlpOption options = ytDlpOptionBuilder.build();
-    YtDlp.execute(options);
-  }
 }
 ```
-
-### 方法详细讲解
-
-1. **downlodSubtitle()**  
-   - **目的**：下载视频的字幕。  
-   - **流程**：  
-     - 生成唯一 ID，用于组织输出文件夹。  
-     - 通过 `YtDlpOptionBuilder` 设置视频 URL、输出路径及字幕下载参数。  
-     - 调用 `.writeSub()` 启用字幕下载；同时通过 `.skipDownload()` 指定仅下载字幕而不下载视频。  
-     - 执行命令并打印返回结果。  
-
-2. **downloadMp3()**  
-   - **目的**：下载视频的音频部分，并转换为 mp3 格式。  
-   - **流程**：  
-     - 生成唯一 ID 用于文件管理。  
-     - 设置视频 URL、启用音频提取（调用 `.audio()`）以及指定音频格式为 mp3（调用 `.audioFormat("mp3")`）。  
-     - 设置输出文件模板并执行下载任务，最后输出结果。
-
-3. **listFormat()**  
-   - **目的**：获取目标视频所有可用的下载格式（如分辨率、编码格式等信息）。  
-   - **流程**：  
-     - 直接调用 `YtDlp.getAvailableFormats(url)` 方法传入目标视频 URL。  
-     - 将返回的格式信息打印到控制台。
-
-4. **test2()**  
-   - **目的**：展示长时间运行的异步下载过程，并实时输出日志。  
-   - **流程**：  
-     - 使用 `LongProcessBroker` 初始化 yt-dlp 命令，并传入视频 URL。  
-     - 添加 `ProcessStreamChangeEventListener` 监听器，用于捕获并打印实时输出的日志。  
-     - 调用 `execute()` 方法启动异步进程。
-
-5. **test1()**  
-   - **目的**：简单展示如何使用构建者模式构建下载命令并执行下载任务。  
-   - **流程**：  
-     - 通过 `YtDlpOptionBuilder` 设置视频 URL 和输出文件模板。  
-     - 构建 `YtDlpOption` 对象，并调用 `YtDlp.execute(options)` 执行下载命令。
-
----
-
-## 使用场景
-
-- **下载视频**：通过不设置 `.skipDownload()`，即可直接下载视频文件。  
-- **下载音频**：调用 `downloadMp3()` 方法，可以将视频中的音频提取出来，并转换为 mp3 格式保存。  
-- **下载字幕**：利用 `downlodSubtitle()` 方法，可以下载视频自带的字幕或者自动生成的字幕。  
-- **格式列表查询**：通过 `listFormat()` 方法，可以列出视频支持的所有下载格式，方便后续定制下载选项。  
-- **实时日志监控**：采用 `test2()` 方法，能够在下载过程中实时监控并处理进程日志。
-
 ---
 
 ## 许可协议
