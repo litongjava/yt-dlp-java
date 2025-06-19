@@ -53,6 +53,11 @@
 - 在整个执行过程中，如遇到网络问题、进程执行错误等情况，都会抛出异常或记录日志，开发者可以在调用层捕获并处理这些异常，确保应用程序稳定运行。
 
 ---
+## 构建
+```
+git clone https://github.com/litongjava/yt-dlp-java.git
+mvn clean install -DskipTests -Dgpg.skip
+```
 ## 使用
 ### 测试 Yt-dlp是否可用
 windows,linux,macos下载地址如下
