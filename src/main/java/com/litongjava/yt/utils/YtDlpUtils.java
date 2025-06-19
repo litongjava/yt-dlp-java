@@ -37,10 +37,17 @@ public class YtDlpUtils {
   }
 
   public static File downloadMp3(String videoId, boolean quiet) {
-    String url = String.format(URL_TEMPLATE, videoId);
+    
     String folder = DOWNLOAD_FOLDER + "/" + videoId + "/mp3";
+    File[] listFiles = new File(folder).listFiles();
+    if (listFiles != null && listFiles.length > 0) {
+      if(listFiles[0].getName().endsWith(".mp3")) {
+        return listFiles[0];
+      }
+    }
+    
+    String url = String.format(URL_TEMPLATE, videoId);
     String output = folder + "/%(title)s.%(ext)s";
-
     YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).audio().audioFormat("mp3").output(output);
     if (quiet) {
       builder.quiet();
@@ -48,9 +55,11 @@ public class YtDlpUtils {
     YtDlpOption options = builder.build();
 
     YtDlp.execute(options);
-    File[] listFiles = new File(folder).listFiles();
+    listFiles = new File(folder).listFiles();
     if (listFiles != null && listFiles.length > 0) {
-      return listFiles[0];
+      if(listFiles[0].getName().endsWith(".mp3")) {
+        return listFiles[0];
+      }
     }
     return null;
   }
