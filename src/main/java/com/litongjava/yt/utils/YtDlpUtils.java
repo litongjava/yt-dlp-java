@@ -78,7 +78,6 @@ public class YtDlpUtils {
           return new ProcessResult(file, true);
         }
       }
-      
     }
 
     String url = String.format(URL_TEMPLATE, videoId);
