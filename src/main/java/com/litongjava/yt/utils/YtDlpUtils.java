@@ -24,13 +24,14 @@ public class YtDlpUtils {
   }
 
   public static ProcessResult downloadMp3(String videoId, boolean quiet) throws IOException, InterruptedException {
-    String folderName = "/mp3";
+    String folderName = "mp3";
     String format = "mp3";
     String suffix = ".mp3";
     return downloadAudio(videoId, quiet, format, folderName, suffix);
   }
 
-  private static ProcessResult downloadVideo(String videoId, boolean quiet, String format, String subFolderName, String suffix) throws IOException, InterruptedException {
+  private static ProcessResult downloadVideo(String videoId, boolean quiet, String format, String subFolderName,
+      String suffix) throws IOException, InterruptedException {
     String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
 
     File outDir = new File(folder);
@@ -42,7 +43,7 @@ public class YtDlpUtils {
           return new ProcessResult(file, true);
         }
       }
-      
+
     }
 
     String url = String.format(URL_TEMPLATE, videoId);
@@ -65,8 +66,9 @@ public class YtDlpUtils {
     }
     return result;
   }
-  
-  private static ProcessResult downloadAudio(String videoId, boolean quiet, String format, String subFolderName, String suffix) throws IOException, InterruptedException {
+
+  private static ProcessResult downloadAudio(String videoId, boolean quiet, String format, String subFolderName,
+      String suffix) throws IOException, InterruptedException {
     String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
 
     File outDir = new File(folder);
@@ -90,10 +92,12 @@ public class YtDlpUtils {
     YtDlpOption options = builder.build();
 
     ProcessResult result = YtDlp.execute(folder, options);
+    // Long taskId = result.getTaskId();
     listFiles = outDir.listFiles();
     if (listFiles != null && listFiles.length > 0) {
       for (File file : listFiles) {
         if (file.getName().endsWith(suffix)) {
+          // file.renameTo(new File(folder, taskId + suffix));
           return new ProcessResult(file, true);
         }
       }
@@ -145,7 +149,8 @@ public class YtDlpUtils {
 
   }
 
-  public static ProcessResult downloadAutoSubtitle(String videoId, boolean quiet) throws IOException, InterruptedException {
+  public static ProcessResult downloadAutoSubtitle(String videoId, boolean quiet)
+      throws IOException, InterruptedException {
 
     String url = String.format(URL_TEMPLATE, videoId);
     String folder = DOWNLOAD_FOLDER + "/" + videoId + "/vtt";
@@ -159,12 +164,14 @@ public class YtDlpUtils {
     return YtDlp.execute(folder, options);
   }
 
-  public static ProcessResult downloadAutoSubtitle(String videoId, String type, boolean quiet) throws IOException, InterruptedException {
+  public static ProcessResult downloadAutoSubtitle(String videoId, String type, boolean quiet)
+      throws IOException, InterruptedException {
     String url = String.format(URL_TEMPLATE, videoId);
     String folder = DOWNLOAD_FOLDER + "/" + videoId + "/" + type;
     String output = folder + "/%(title)s.%(ext)s";
 
-    YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).output(output).writeSub().writeAutoSub().convertSubs(type).skipDownload();
+    YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).output(output).writeSub().writeAutoSub()
+        .convertSubs(type).skipDownload();
     if (quiet) {
       builder.quiet();
     }

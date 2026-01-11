@@ -1,7 +1,7 @@
 package com.litongjava.yt.builder;
 
 /**
- * YtDlpOptionBuilder is a builder class for constructing command-line options 
+ * YtDlpOptionBuilder is a builder class for constructing command-line options
  * for yt-dlp. It uses a StringBuilder to accumulate options and parameters.
  */
 public class YtDlpOptionBuilder {
@@ -35,15 +35,15 @@ public class YtDlpOptionBuilder {
   /**
    * Sets the output filename template.
    * <p>
-   * This method adds the "--output" option along with the specified template.
-   * If the template contains spaces, it will be wrapped in quotes.
+   * This method adds the "--output" option along with the specified template. If
+   * the template contains spaces, it will be wrapped in quotes.
    *
    * @param template The output filename template (e.g., "%(title)s.%(ext)s").
    * @return The current instance of YtDlpOptionBuilder.
    */
   public YtDlpOptionBuilder output(String template) {
     append("--output");
-    append("\"" + template + "\""); // Wrap the template in quotes if it contains spaces.
+    append(template);
     return this;
   }
 
@@ -100,8 +100,8 @@ public class YtDlpOptionBuilder {
   }
 
   /**
-   * Builds the final YtDlpOption object which contains the constructed command-line options
-   * and the URL.
+   * Builds the final YtDlpOption object which contains the constructed
+   * command-line options and the URL.
    *
    * @return A new YtDlpOption instance.
    */
