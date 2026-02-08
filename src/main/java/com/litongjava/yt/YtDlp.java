@@ -22,7 +22,7 @@ public class YtDlp {
   // Download URLs for different operating systems
   public static final String windows_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
   public static final String linux_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux";
-  public static final String mac_os_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
+  public static final String mac_os_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos";
 
   /**
    * Downloads the yt-dlp executable if it does not already exist.
