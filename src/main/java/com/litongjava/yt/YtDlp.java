@@ -35,7 +35,7 @@ public class YtDlp {
       return;
     }
 
-    String downloadUrl = ytDlpUrl();
+    String downloadUrl = getYtDlpUrl();
     HttpURLConnection connection = null;
 
     try {
@@ -95,7 +95,7 @@ public class YtDlp {
    *
    * @return A string representing the download URL.
    */
-  public static String ytDlpUrl() {
+  public static String getYtDlpUrl() {
     String os = System.getProperty("os.name").toLowerCase();
     if (os.startsWith("windows")) {
       return windows_download_url;
