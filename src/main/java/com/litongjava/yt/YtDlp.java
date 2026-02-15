@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.nio.file.Files;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
@@ -13,6 +14,7 @@ import com.litongjava.tio.utils.commandline.ProcessUtils;
 import com.litongjava.tio.utils.snowflake.SnowflakeIdUtils;
 import com.litongjava.yt.builder.YtDlpOption;
 import com.litongjava.yt.builder.YtDlpOptionBuilder;
+import com.litongjava.yt.utils.URLUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,8 +28,11 @@ public class YtDlp {
 
   /**
    * Downloads the yt-dlp executable if it does not already exist.
+   * @throws IOException 
+   * @throws ProtocolException 
+   * @throws MalformedURLException 
    */
-  public static void downloadYtDlp() {
+  public static void downloadYtDlp() throws MalformedURLException, ProtocolException, IOException {
     String ytDlpName = getYtDlpName();
     File file = new File(ytDlpName);
     if (file.exists()) {
@@ -39,11 +44,8 @@ public class YtDlp {
     HttpURLConnection connection = null;
 
     try {
-      URL url = new URL(downloadUrl);
-      connection = (HttpURLConnection) url.openConnection();
+      connection = URLUtils.getConnection(downloadUrl);
       connection.setRequestMethod("GET");
-      connection.setConnectTimeout(15000);
-      connection.setReadTimeout(15000);
 
       // Start the connection
       int responseCode = connection.getResponseCode();
@@ -60,14 +62,12 @@ public class YtDlp {
 
         // add permissions
         if (!file.setExecutable(true)) {
-          System.err.println("Failed to set executable permission for " + file.getAbsolutePath());
+          log.error("Failed to set executable permission for " + file.getAbsolutePath());
         }
       } else {
-        System.err.println("Download failed, server returned response code: " + responseCode);
+        log.error("Download failed, server returned response code: " + responseCode);
       }
 
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
     } finally {
       if (connection != null) {
         connection.disconnect();
