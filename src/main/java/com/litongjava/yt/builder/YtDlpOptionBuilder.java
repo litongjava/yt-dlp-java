@@ -147,4 +147,10 @@ public class YtDlpOptionBuilder {
     return this;
   }
 
+  public YtDlpOptionBuilder proxy(String proxyUrl) {
+    append("--proxy");
+    append(proxyUrl);
+    return this;
+  }
+
 }

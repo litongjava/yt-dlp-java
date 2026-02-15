@@ -16,4 +16,8 @@ public class YtDlpOption {
   public String getUrl() {
     return url;
   }
+
+  public String toCommand() {
+    return this.getStringBuilder() + this.getUrl();
+  }
 }
