@@ -1,6 +1,5 @@
 package com.litongjava.yt.utils;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.junit.Test;
@@ -26,7 +25,7 @@ public class YtDlpUtilsTest {
   public void downloadMp3() {
     try {
       ProcessResult downloadMp3 = YtDlpUtils.downloadMp3("AMCUqgu_cTM", true);
-      File file = downloadMp3.getFile();
+      String file = downloadMp3.getPath();
       System.out.println(file);
     } catch (IOException e) {
       e.printStackTrace();
@@ -41,10 +40,9 @@ public class YtDlpUtilsTest {
     ProcessResult result;
     try {
       result = YtDlpUtils.downloadMp4("AMCUqgu_cTM", true);
-      if (result.getFile() != null) {
-        File file = result.getFile();
-        System.out.println(file.getName());
-        System.out.println(file.exists());
+      if (result.getPath() != null) {
+        String file = result.getPath();
+        System.out.println(file);
       }
     } catch (IOException e) {
       e.printStackTrace();

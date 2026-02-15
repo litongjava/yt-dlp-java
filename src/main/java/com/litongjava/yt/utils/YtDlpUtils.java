@@ -47,7 +47,7 @@ public class YtDlpUtils {
     if (listFiles != null && listFiles.length > 0) {
       for (File file : listFiles) {
         if (file.getName().endsWith(suffix)) {
-          return new ProcessResult(file, true);
+          return ProcessResult.fromFile(file, true);
         }
       }
 
@@ -68,7 +68,7 @@ public class YtDlpUtils {
     if (listFiles != null && listFiles.length > 0) {
       for (File file : listFiles) {
         if (file.getName().endsWith(suffix)) {
-          return new ProcessResult(file, true);
+          return ProcessResult.fromFile(file, true);
         }
       }
     }
@@ -85,7 +85,7 @@ public class YtDlpUtils {
     if (listFiles != null && listFiles.length > 0) {
       for (File file : listFiles) {
         if (file.getName().endsWith(suffix)) {
-          return new ProcessResult(file, true);
+          return ProcessResult.fromFile(file, true);
         }
       }
     }
@@ -107,7 +107,7 @@ public class YtDlpUtils {
       for (File file : listFiles) {
         if (file.getName().endsWith(suffix)) {
           // file.renameTo(new File(folder, taskId + suffix));
-          return new ProcessResult(file, true);
+          return ProcessResult.fromFile(file, true);
         }
       }
     }
