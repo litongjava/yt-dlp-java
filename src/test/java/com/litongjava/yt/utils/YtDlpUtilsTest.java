@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
-import com.litongjava.yt.YtDlp;
 
 public class YtDlpUtilsTest {
 
@@ -54,7 +53,7 @@ public class YtDlpUtilsTest {
   @Test
   public void listFormat() {
     try {
-      ProcessResult result = YtDlp.getAvailableFormats("https://www.youtube.com/watch?v=PnHMAVXpKg8");
+      ProcessResult result = YtDlpUtils.getAvailableFormats("https://www.youtube.com/watch?v=PnHMAVXpKg8");
       System.out.println(result.getStdOut());
       System.out.println(result.getStdErr());
     } catch (IOException e) {
@@ -62,7 +61,5 @@ public class YtDlpUtilsTest {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-
   }
-
 }

@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.util.List;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
-import com.litongjava.yt.YtDlp;
 import com.litongjava.yt.builder.YtDlpOption;
 import com.litongjava.yt.builder.YtDlpOptionBuilder;
 
@@ -19,7 +18,8 @@ public class YtDlpUtils {
     return downloadMp4(videoId, quiet, null);
   }
 
-  public static ProcessResult downloadMp4(String videoId, boolean quiet, String proxy) throws IOException, InterruptedException {
+  public static ProcessResult downloadMp4(String videoId, boolean quiet, String proxy)
+      throws IOException, InterruptedException {
     String folderName = "mp4";
     String format = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4";
     String suffix = ".mp4";
@@ -30,15 +30,16 @@ public class YtDlpUtils {
     return downloadMp3(videoId, quiet, null);
   }
 
-  public static ProcessResult downloadMp3(String videoId, boolean quiet, String proxy) throws IOException, InterruptedException {
+  public static ProcessResult downloadMp3(String videoId, boolean quiet, String proxy)
+      throws IOException, InterruptedException {
     String folderName = "mp3";
     String format = "mp3";
     String suffix = ".mp3";
     return downloadAudio(videoId, quiet, proxy, format, folderName, suffix);
   }
 
-  private static ProcessResult downloadVideo(String videoId, boolean quiet, String proxy, String format, String subFolderName,
-      String suffix) throws IOException, InterruptedException {
+  private static ProcessResult downloadVideo(String videoId, boolean quiet, String proxy, String format,
+      String subFolderName, String suffix) throws IOException, InterruptedException {
     String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
 
     File outDir = new File(folder);
@@ -75,8 +76,8 @@ public class YtDlpUtils {
     return result;
   }
 
-  private static ProcessResult downloadAudio(String videoId, boolean quiet, String proxy, String format, String subFolderName,
-      String suffix) throws IOException, InterruptedException {
+  private static ProcessResult downloadAudio(String videoId, boolean quiet, String proxy, String format,
+      String subFolderName, String suffix) throws IOException, InterruptedException {
     String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
 
     File outDir = new File(folder);
@@ -118,7 +119,8 @@ public class YtDlpUtils {
     return downlodSubtitle(videoId, quiet, null);
   }
 
-  public static ProcessResult downlodSubtitle(String videoId, boolean quiet, String proxy) throws IOException, InterruptedException {
+  public static ProcessResult downlodSubtitle(String videoId, boolean quiet, String proxy)
+      throws IOException, InterruptedException {
 
     String folder = DOWNLOAD_FOLDER + "/" + videoId + "/sub";
     String suffix = ".vtt";
@@ -213,4 +215,17 @@ public class YtDlpUtils {
     }
   }
 
+  /**
+   * Retrieves the available formats for the specified URL.
+   *
+   * @param url The URL of the video.
+   * @return The available formats as a String.
+   * @throws InterruptedException
+   * @throws IOException
+   */
+  public static ProcessResult getAvailableFormats(String url) throws IOException, InterruptedException {
+    YtDlpOptionBuilder ytDlpOptionBuilder = new YtDlpOptionBuilder();
+    YtDlpOption options = ytDlpOptionBuilder.url(url).listFormats().build();
+    return YtDlp.execute(options);
+  }
 }

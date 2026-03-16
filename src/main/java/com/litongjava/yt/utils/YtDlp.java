@@ -1,4 +1,4 @@
-package com.litongjava.yt;
+package com.litongjava.yt.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +13,6 @@ import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.commandline.ProcessUtils;
 import com.litongjava.tio.utils.snowflake.SnowflakeIdUtils;
 import com.litongjava.yt.builder.YtDlpOption;
-import com.litongjava.yt.builder.YtDlpOptionBuilder;
-import com.litongjava.yt.utils.URLUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -128,7 +126,7 @@ public class YtDlp {
    * @throws InterruptedException
    * @throws IOException
    */
-  private static ProcessResult execute(String logDir, String options) throws IOException, InterruptedException {
+  public static ProcessResult execute(String logDir, String options) throws IOException, InterruptedException {
     YtDlp.downloadYtDlp();
 
     long id = SnowflakeIdUtils.id();
@@ -142,18 +140,27 @@ public class YtDlp {
     return result;
   }
 
-  /**
-   * Retrieves the available formats for the specified URL.
-   *
-   * @param url The URL of the video.
-   * @return The available formats as a String.
-   * @throws InterruptedException
-   * @throws IOException
-   */
-  public static ProcessResult getAvailableFormats(String url) throws IOException, InterruptedException {
-    YtDlpOptionBuilder ytDlpOptionBuilder = new YtDlpOptionBuilder();
-    YtDlpOption options = ytDlpOptionBuilder.url(url).listFormats().build();
-    long id = SnowflakeIdUtils.id();
-    return YtDlp.execute(id + "", options);
+  public static ProcessResult execute(YtDlpOption options) throws IOException, InterruptedException {
+    String command = options.toCommand();
+    return execute(command);
   }
+
+  public static ProcessResult execute(String options) throws IOException, InterruptedException {
+    YtDlp.downloadYtDlp();
+
+    long id = SnowflakeIdUtils.id();
+    String commandString = "./" + getYtDlpName() + "  " + options;
+    log.info("Task id: " + id + " Executing command: " + commandString);
+    String[] commandArray = commandString.split("  ");
+
+    ProcessBuilder processBuilder = new ProcessBuilder(commandArray);
+    File logDir = new File("log" + File.separator + id);
+    if (!logDir.exists()) {
+      logDir.mkdirs();
+    }
+    ProcessResult result = ProcessUtils.execute(logDir, processBuilder);
+    result.setTaskId(id);
+    return result;
+  }
+
 }
