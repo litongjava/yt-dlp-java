@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
+import com.litongjava.tio.utils.environment.EnvUtils;
 
 public class YtDlpUtilsTest {
 
@@ -56,6 +57,21 @@ public class YtDlpUtilsTest {
       ProcessResult result = YtDlpUtils.getAvailableFormats("https://www.youtube.com/watch?v=PnHMAVXpKg8");
       System.out.println(result.getStdOut());
       System.out.println(result.getStdErr());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void getPlayList() {
+    EnvUtils.load();
+    try {
+      String url = "https://www.youtube.com/playlist?list=xxxx";
+      ProcessResult result = YtDlpUtils.getPlayList(url);
+      System.out.println("out:" + result.getStdOut());
+      System.out.println("err" + result.getStdErr());
     } catch (IOException e) {
       e.printStackTrace();
     } catch (InterruptedException e) {

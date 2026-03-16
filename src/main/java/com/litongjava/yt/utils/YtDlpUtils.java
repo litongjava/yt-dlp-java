@@ -228,4 +228,10 @@ public class YtDlpUtils {
     YtDlpOption options = ytDlpOptionBuilder.url(url).listFormats().build();
     return YtDlp.execute(options);
   }
+  
+  public static ProcessResult getPlayList(String url) throws IOException, InterruptedException {
+    YtDlpOptionBuilder ytDlpOptionBuilder = new YtDlpOptionBuilder();
+    YtDlpOptionBuilder builder = ytDlpOptionBuilder.url(url).flatPlaylist().dumpSingleJson();
+    return YtDlp.execute(builder);
+  }
 }

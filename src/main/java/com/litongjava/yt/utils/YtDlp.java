@@ -8,11 +8,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.commandline.ProcessUtils;
+import com.litongjava.tio.utils.environment.EnvUtils;
+import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.snowflake.SnowflakeIdUtils;
 import com.litongjava.yt.builder.YtDlpOption;
+import com.litongjava.yt.builder.YtDlpOptionBuilder;
+import com.litongjava.yt.consts.YtDlpConst;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,12 +35,12 @@ public class YtDlp {
    * @throws ProtocolException 
    * @throws MalformedURLException 
    */
-  public static void downloadYtDlp() throws MalformedURLException, ProtocolException, IOException {
+  public static String downloadYtDlp() throws MalformedURLException, ProtocolException, IOException {
     String ytDlpName = getYtDlpName();
     File file = new File(ytDlpName);
     if (file.exists()) {
       // If the file already exists, no need to download it
-      return;
+      return ytDlpName;
     }
 
     String downloadUrl = getYtDlpUrl();
@@ -71,6 +76,7 @@ public class YtDlp {
         connection.disconnect();
       }
     }
+    return file.getAbsolutePath();
   }
 
   /**
@@ -81,9 +87,23 @@ public class YtDlp {
   public static String getYtDlpName() {
     String os = System.getProperty("os.name").toLowerCase();
     if (os.startsWith("windows")) {
+      String str = EnvUtils.getStr(YtDlpConst.YT_DLP_BIN_WIN);
+      if (str != null && Files.exists(Paths.get(str))) {
+        return str;
+      }
       return "yt-dlp.exe";
     } else if (os.startsWith("linux")) {
+
+      String str = EnvUtils.getStr(YtDlpConst.YT_DLP_BIN_LINUX);
+      if (str != null && Files.exists(Paths.get(str))) {
+        return str;
+      }
+
       return "yt-dlp_linux";
+    }
+    String str = EnvUtils.getStr(YtDlpConst.YT_DLP_BIN_MAC);
+    if (str != null && Files.exists(Paths.get(str))) {
+      return str;
     }
     return "yt-dlp_macos";
   }
@@ -117,6 +137,15 @@ public class YtDlp {
     return execute(logDir, command);
   }
 
+  public static ProcessResult execute(YtDlpOptionBuilder builder) throws IOException, InterruptedException {
+    String proxy = EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY);
+    if (StrUtil.isNotBlank(proxy)) {
+      builder.proxy(proxy);
+    }
+    YtDlpOption option = builder.build();
+    return execute(option);
+  }
+
   /**
    * Internal execute method that downloads yt-dlp (if needed) and runs the
    * command.
@@ -127,10 +156,10 @@ public class YtDlp {
    * @throws IOException
    */
   public static ProcessResult execute(String logDir, String options) throws IOException, InterruptedException {
-    YtDlp.downloadYtDlp();
+    String ytDlpPath = YtDlp.downloadYtDlp();
 
     long id = SnowflakeIdUtils.id();
-    String commandString = "./" + getYtDlpName() + "  " + options;
+    String commandString = ytDlpPath + "  " + options;
     log.info("Task id: " + id + " Executing command: " + commandString);
     String[] commandArray = commandString.split("  ");
 
@@ -146,15 +175,15 @@ public class YtDlp {
   }
 
   public static ProcessResult execute(String options) throws IOException, InterruptedException {
-    YtDlp.downloadYtDlp();
+    String ytDlpPath = YtDlp.downloadYtDlp();
 
     long id = SnowflakeIdUtils.id();
-    String commandString = "./" + getYtDlpName() + "  " + options;
+    String commandString = ytDlpPath + "  " + options;
     log.info("Task id: " + id + " Executing command: " + commandString);
     String[] commandArray = commandString.split("  ");
 
     ProcessBuilder processBuilder = new ProcessBuilder(commandArray);
-    File logDir = new File("log" + File.separator + id);
+    File logDir = new File("yt-dlp-task-log" + File.separator + id);
     if (!logDir.exists()) {
       logDir.mkdirs();
     }
