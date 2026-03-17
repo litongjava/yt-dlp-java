@@ -105,12 +105,13 @@ public class YtDlpUtils {
     String url = String.format(URL_TEMPLATE, videoId);
     String output = folder + "/%(title)s.%(ext)s";
 
-    YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).audio().audioFormat(format).output(output);
+    YtDlpOptionBuilder builder = builder(proxy, cookies);
+    
+    builder.url(url).audio().audioFormat(format).output(output);
     if (quiet) {
       builder.quiet();
     }
-    applyProxy(builder, proxy);
-    applyCookies(builder, cookies);
+    
 
     YtDlpOption options = builder.build();
 
@@ -126,6 +127,14 @@ public class YtDlpUtils {
       }
     }
     return result;
+  }
+
+  public static YtDlpOptionBuilder builder(String proxy, String cookies) {
+    YtDlpOptionBuilder builder = new YtDlpOptionBuilder();
+    applyProxy(builder, proxy);
+    applyCookies(builder, cookies);
+    applyJsRruntimes(builder);
+    return builder;
   }
 
   public static ProcessResult downlodSubtitle(String videoId, boolean quiet) throws IOException, InterruptedException {
@@ -263,7 +272,7 @@ public class YtDlpUtils {
     if (denoBinPath != null) {
       String value = denoBinPath.trim();
       if (!value.isEmpty()) {
-        builder.jsRuntimes(value);
+        builder.jsRuntimesDeno(value);
       }
     }
   }

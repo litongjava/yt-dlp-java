@@ -158,6 +158,12 @@ public class YtDlpOptionBuilder {
     return this;
   }
 
+  public YtDlpOptionBuilder jsRuntimesDeno(String runtime) {
+    appendOption("--js-runtimes deno:", runtime);
+    return this;
+  }
+
+  
   public YtDlpOptionBuilder noJsRuntimes() {
     append("--no-js-runtimes");
     return this;
