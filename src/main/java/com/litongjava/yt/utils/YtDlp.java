@@ -10,6 +10,9 @@ import java.net.ProtocolException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.commandline.ProcessUtils;
 import com.litongjava.tio.utils.environment.EnvUtils;
@@ -19,10 +22,8 @@ import com.litongjava.yt.builder.YtDlpOption;
 import com.litongjava.yt.builder.YtDlpOptionBuilder;
 import com.litongjava.yt.consts.YtDlpConst;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class YtDlp {
+  public static final Logger log = LoggerFactory.getLogger(YtDlp.class);
 
   // Download URLs for different operating systems
   public static final String windows_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
@@ -98,7 +99,6 @@ public class YtDlp {
       if (str != null && Files.exists(Paths.get(str))) {
         return str;
       }
-
       return "yt-dlp_linux";
     }
     String str = EnvUtils.getStr(YtDlpConst.YT_DLP_BIN_MAC);

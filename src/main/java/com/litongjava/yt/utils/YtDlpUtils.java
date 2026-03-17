@@ -3,11 +3,14 @@ package com.litongjava.yt.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
+import com.litongjava.tio.utils.environment.EnvUtils;
 import com.litongjava.yt.builder.YtDlpOption;
 import com.litongjava.yt.builder.YtDlpOptionBuilder;
+import com.litongjava.yt.consts.YtDlpConst;
 
 public class YtDlpUtils {
 
@@ -27,15 +30,23 @@ public class YtDlpUtils {
   }
 
   public static ProcessResult downloadMp3(String videoId, boolean quiet) throws IOException, InterruptedException {
-    return downloadMp3(videoId, quiet, null);
+    String proxy = EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY);
+    String cookies = EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES);
+    return downloadMp3(proxy, cookies, videoId, quiet);
   }
 
-  public static ProcessResult downloadMp3(String videoId, boolean quiet, String proxy)
+  public static ProcessResult downloadMp3(String proxy, String videoId, boolean quiet)
+      throws IOException, InterruptedException {
+    String cookies = EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES);
+    return downloadMp3(proxy, cookies, videoId, quiet);
+  }
+
+  public static ProcessResult downloadMp3(String proxy, String cookies, String videoId, boolean quiet)
       throws IOException, InterruptedException {
     String folderName = "mp3";
     String format = "mp3";
     String suffix = ".mp3";
-    return downloadAudio(videoId, quiet, proxy, format, folderName, suffix);
+    return downloadAudio(proxy, cookies, videoId, quiet, format, folderName, suffix);
   }
 
   private static ProcessResult downloadVideo(String videoId, boolean quiet, String proxy, String format,
@@ -76,7 +87,7 @@ public class YtDlpUtils {
     return result;
   }
 
-  private static ProcessResult downloadAudio(String videoId, boolean quiet, String proxy, String format,
+  public static ProcessResult downloadAudio(String proxy, String cookies, String videoId, boolean quiet, String format,
       String subFolderName, String suffix) throws IOException, InterruptedException {
     String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
 
@@ -95,10 +106,12 @@ public class YtDlpUtils {
     String output = folder + "/%(title)s.%(ext)s";
 
     YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).audio().audioFormat(format).output(output);
-    applyProxy(builder, proxy);
     if (quiet) {
       builder.quiet();
     }
+    applyProxy(builder, proxy);
+    applyCookies(builder, cookies);
+
     YtDlpOption options = builder.build();
 
     ProcessResult result = YtDlp.execute(folder, options);
@@ -177,10 +190,12 @@ public class YtDlpUtils {
     String output = folder + "/%(title)s.%(ext)s";
 
     YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).output(output).writeAutoSub().skipDownload();
-    applyProxy(builder, proxy);
     if (quiet) {
       builder.quiet();
     }
+
+    applyProxy(builder, proxy);
+
     YtDlpOption options = builder.build();
     return YtDlp.execute(folder, options);
   }
@@ -206,11 +221,49 @@ public class YtDlpUtils {
     return YtDlp.execute(folder, options);
   }
 
-  private static void applyProxy(YtDlpOptionBuilder builder, String proxy) {
+  public static void applyProxy(YtDlpOptionBuilder builder, String proxy) {
     if (proxy != null) {
       String value = proxy.trim();
       if (!value.isEmpty()) {
         builder.proxy(value);
+      }
+    }
+  }
+
+  public static void applyCookies(YtDlpOptionBuilder builder, String cookies) {
+    if (cookies != null) {
+      String value = cookies.trim();
+      if (!value.isEmpty()) {
+        builder.cookies(value);
+      }
+    }
+  }
+
+  public static void applyJsRruntimes(YtDlpOptionBuilder builder) {
+    String denoBinPath = null;
+    String os = System.getProperty("os.name").toLowerCase();
+    if (os.startsWith("windows")) {
+      String str = EnvUtils.getStr(YtDlpConst.DENO_BIN_WIN);
+      if (str != null && Files.exists(Paths.get(str))) {
+        denoBinPath = str;
+      }
+    } else if (os.startsWith("linux")) {
+
+      String str = EnvUtils.getStr(YtDlpConst.DENO_BIN_LINUX);
+      if (str != null && Files.exists(Paths.get(str))) {
+        denoBinPath = str;
+      }
+    } else {
+      String str = EnvUtils.getStr(YtDlpConst.DENO_BIN_MAC);
+      if (str != null && Files.exists(Paths.get(str))) {
+        denoBinPath = str;
+      }
+    }
+
+    if (denoBinPath != null) {
+      String value = denoBinPath.trim();
+      if (!value.isEmpty()) {
+        builder.jsRuntimes(value);
       }
     }
   }
@@ -228,7 +281,7 @@ public class YtDlpUtils {
     YtDlpOption options = ytDlpOptionBuilder.url(url).listFormats().build();
     return YtDlp.execute(options);
   }
-  
+
   public static ProcessResult getPlayList(String url) throws IOException, InterruptedException {
     YtDlpOptionBuilder ytDlpOptionBuilder = new YtDlpOptionBuilder();
     YtDlpOptionBuilder builder = ytDlpOptionBuilder.url(url).flatPlaylist().dumpSingleJson();
