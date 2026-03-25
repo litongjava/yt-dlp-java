@@ -52,7 +52,7 @@ public class YtDlpUtils {
 
   private static ProcessResult downloadVideo(String videoId, boolean quiet, String proxy, String format,
       String subFolderName, String suffix) throws IOException, InterruptedException {
-    String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
+    String folder = getDownlaodFolder(videoId, subFolderName);
 
     File outDir = new File(folder);
     File[] listFiles = outDir.listFiles();
@@ -88,9 +88,14 @@ public class YtDlpUtils {
     return result;
   }
 
+  public static String getDownlaodFolder(String videoId, String subFolderName) {
+    String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
+    return folder;
+  }
+
   public static ProcessResult downloadAudio(String proxy, String cookies, String videoId, boolean quiet, String format,
       String subFolderName, String suffix) throws IOException, InterruptedException {
-    String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
+    String folder = getDownlaodFolder(videoId, subFolderName);
 
     File outDir = new File(folder);
     File[] listFiles = outDir.listFiles();
@@ -131,7 +136,7 @@ public class YtDlpUtils {
 
   public static ProcessResult downloadAudio(String videoId, boolean quiet, String format, String subFolderName,
       String suffix) throws IOException, InterruptedException {
-    String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
+    String folder = getDownlaodFolder(videoId, subFolderName);
 
     File outDir = new File(folder);
     File[] listFiles = outDir.listFiles();
@@ -368,7 +373,8 @@ public class YtDlpUtils {
   public static ProcessResult getUploadDate(String videoId, boolean quiet) throws IOException, InterruptedException {
     YtDlpOptionBuilder builder = builder();
     String url = String.format(URL_TEMPLATE, videoId);
-    builder.print("%(upload_date>%Y-%m-%d)s").url(url);
+    //String template = "%(upload_date>%Y-%m-%d)s";
+    builder.print("upload_date").url(url);
     return YtDlp.execute(builder);
   }
 
