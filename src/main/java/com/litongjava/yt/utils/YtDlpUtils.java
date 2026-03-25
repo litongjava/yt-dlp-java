@@ -30,9 +30,10 @@ public class YtDlpUtils {
   }
 
   public static ProcessResult downloadMp3(String videoId, boolean quiet) throws IOException, InterruptedException {
-    String proxy = EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY);
-    String cookies = EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES);
-    return downloadMp3(proxy, cookies, videoId, quiet);
+    String folderName = "mp3";
+    String format = "mp3";
+    String suffix = ".mp3";
+    return downloadAudio(videoId, quiet, format, folderName, suffix);
   }
 
   public static ProcessResult downloadMp3(String proxy, String videoId, boolean quiet)
@@ -106,12 +107,11 @@ public class YtDlpUtils {
     String output = folder + "/%(title)s.%(ext)s";
 
     YtDlpOptionBuilder builder = builder(proxy, cookies);
-    
+
     builder.url(url).audio().audioFormat(format).output(output);
     if (quiet) {
       builder.quiet();
     }
-    
 
     YtDlpOption options = builder.build();
 
@@ -129,12 +129,45 @@ public class YtDlpUtils {
     return result;
   }
 
-  public static YtDlpOptionBuilder builder(String proxy, String cookies) {
-    YtDlpOptionBuilder builder = new YtDlpOptionBuilder();
-    applyProxy(builder, proxy);
-    applyCookies(builder, cookies);
-    applyJsRruntimes(builder);
-    return builder;
+  public static ProcessResult downloadAudio(String videoId, boolean quiet, String format, String subFolderName,
+      String suffix) throws IOException, InterruptedException {
+    String folder = DOWNLOAD_FOLDER + File.separator + videoId + File.separator + subFolderName;
+
+    File outDir = new File(folder);
+    File[] listFiles = outDir.listFiles();
+
+    if (listFiles != null && listFiles.length > 0) {
+      for (File file : listFiles) {
+        if (file.getName().endsWith(suffix)) {
+          return ProcessResult.fromFile(file, true);
+        }
+      }
+    }
+
+    String url = String.format(URL_TEMPLATE, videoId);
+    String output = folder + "/%(title)s.%(ext)s";
+
+    YtDlpOptionBuilder builder = builder();
+
+    builder.url(url).audio().audioFormat(format).output(output);
+    if (quiet) {
+      builder.quiet();
+    }
+
+    YtDlpOption options = builder.build();
+
+    ProcessResult result = YtDlp.execute(folder, options);
+    // Long taskId = result.getTaskId();
+    listFiles = outDir.listFiles();
+    if (listFiles != null && listFiles.length > 0) {
+      for (File file : listFiles) {
+        if (file.getName().endsWith(suffix)) {
+          // file.renameTo(new File(folder, taskId + suffix));
+          return ProcessResult.fromFile(file, true);
+        }
+      }
+    }
+    return result;
   }
 
   public static ProcessResult downlodSubtitle(String videoId, boolean quiet) throws IOException, InterruptedException {
@@ -230,6 +263,33 @@ public class YtDlpUtils {
     return YtDlp.execute(folder, options);
   }
 
+  public static YtDlpOptionBuilder builder(String proxy, String cookies) {
+    YtDlpOptionBuilder builder = new YtDlpOptionBuilder();
+    applyProxy(builder, proxy);
+    applyCookies(builder, cookies);
+    applyJsRruntimes(builder);
+    return builder;
+  }
+
+  public static YtDlpOptionBuilder builder() {
+    YtDlpOptionBuilder builder = new YtDlpOptionBuilder();
+    applyProxy(builder);
+    applyCookies(builder);
+    applyJsRruntimes(builder);
+    return builder;
+  }
+
+  public static void applyCookies(YtDlpOptionBuilder builder) {
+    String cookies = EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES);
+    applyCookies(builder, cookies);
+  }
+
+  public static void applyProxy(YtDlpOptionBuilder builder) {
+    String proxy = EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY);
+    applyProxy(builder, proxy);
+
+  }
+
   public static void applyProxy(YtDlpOptionBuilder builder, String proxy) {
     if (proxy != null) {
       String value = proxy.trim();
@@ -296,4 +356,20 @@ public class YtDlpUtils {
     YtDlpOptionBuilder builder = ytDlpOptionBuilder.url(url).flatPlaylist().dumpSingleJson();
     return YtDlp.execute(builder);
   }
+
+  /**
+   * /usr/bin/yt-dlp_linux --print "%(upload_date>%Y-%m-%d)s" https://www.youtube.com/watch?v=Mfxoo_E969Y
+   * @param videoId
+   * @param quiet
+   * @return
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  public static ProcessResult getUploadDate(String videoId, boolean quiet) throws IOException, InterruptedException {
+    YtDlpOptionBuilder builder = builder();
+    String url = String.format(URL_TEMPLATE, videoId);
+    builder.print("%(upload_date>%Y-%m-%d)s").url(url);
+    return YtDlp.execute(builder);
+  }
+
 }

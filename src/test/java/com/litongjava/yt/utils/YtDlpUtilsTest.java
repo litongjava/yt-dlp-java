@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.environment.EnvUtils;
+import com.litongjava.yt.builder.YtDlpOptionBuilder;
 
 public class YtDlpUtilsTest {
 
@@ -70,6 +71,21 @@ public class YtDlpUtilsTest {
     try {
       String url = "https://www.youtube.com/playlist?list=xxxx";
       ProcessResult result = YtDlpUtils.getPlayList(url);
+      System.out.println("out:" + result.getStdOut());
+      System.out.println("err" + result.getStdErr());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void get_upload_date() {
+    EnvUtils.load();
+    try {
+      String url = "Mfxoo_E969Y";
+      ProcessResult result = YtDlpUtils.getUploadDate(url, false);
       System.out.println("out:" + result.getStdOut());
       System.out.println("err" + result.getStdErr());
     } catch (IOException e) {

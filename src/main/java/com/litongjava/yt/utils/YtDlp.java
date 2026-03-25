@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.commandline.ProcessUtils;
 import com.litongjava.tio.utils.environment.EnvUtils;
-import com.litongjava.tio.utils.hutool.StrUtil;
 import com.litongjava.tio.utils.snowflake.SnowflakeIdUtils;
 import com.litongjava.yt.builder.YtDlpOption;
 import com.litongjava.yt.builder.YtDlpOptionBuilder;
@@ -138,10 +137,6 @@ public class YtDlp {
   }
 
   public static ProcessResult execute(YtDlpOptionBuilder builder) throws IOException, InterruptedException {
-    String proxy = EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY);
-    if (StrUtil.isNotBlank(proxy)) {
-      builder.proxy(proxy);
-    }
     YtDlpOption option = builder.build();
     return execute(option);
   }
