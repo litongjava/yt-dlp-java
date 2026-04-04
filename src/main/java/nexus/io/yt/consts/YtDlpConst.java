@@ -1,4 +1,4 @@
-package com.litongjava.yt.consts;
+package nexus.io.yt.consts;
 
 public interface YtDlpConst {
   String YT_DLP_PROXY = "yt.dlp.proxy";

@@ -1,4 +1,4 @@
-package com.litongjava.yt.utils;
+package nexus.io.yt.utils;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

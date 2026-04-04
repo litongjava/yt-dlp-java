@@ -1,4 +1,4 @@
-package com.litongjava.yt.utils;
+package nexus.io.yt.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +17,10 @@ import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.commandline.ProcessUtils;
 import com.litongjava.tio.utils.environment.EnvUtils;
 import com.litongjava.tio.utils.snowflake.SnowflakeIdUtils;
-import com.litongjava.yt.builder.YtDlpOption;
-import com.litongjava.yt.builder.YtDlpOptionBuilder;
-import com.litongjava.yt.consts.YtDlpConst;
+
+import nexus.io.yt.builder.YtDlpOption;
+import nexus.io.yt.builder.YtDlpOptionBuilder;
+import nexus.io.yt.consts.YtDlpConst;
 
 public class YtDlp {
   public static final Logger log = LoggerFactory.getLogger(YtDlp.class);

@@ -1,4 +1,4 @@
-package com.litongjava.yt.utils;
+package nexus.io.yt.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,9 +8,10 @@ import java.util.List;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.environment.EnvUtils;
-import com.litongjava.yt.builder.YtDlpOption;
-import com.litongjava.yt.builder.YtDlpOptionBuilder;
-import com.litongjava.yt.consts.YtDlpConst;
+
+import nexus.io.yt.builder.YtDlpOption;
+import nexus.io.yt.builder.YtDlpOptionBuilder;
+import nexus.io.yt.consts.YtDlpConst;
 
 public class YtDlpUtils {
 

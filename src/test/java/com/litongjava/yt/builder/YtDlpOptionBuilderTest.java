@@ -2,6 +2,9 @@ package com.litongjava.yt.builder;
 
 import org.junit.Test;
 
+import nexus.io.yt.builder.YtDlpOption;
+import nexus.io.yt.builder.YtDlpOptionBuilder;
+
 public class YtDlpOptionBuilderTest {
 
   @Test

@@ -1,4 +1,4 @@
-package com.litongjava.yt.model;
+package nexus.io.yt.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

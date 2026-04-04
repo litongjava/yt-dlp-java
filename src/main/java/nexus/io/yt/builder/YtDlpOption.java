@@ -1,4 +1,4 @@
-package com.litongjava.yt.builder;
+package nexus.io.yt.builder;
 
 public class YtDlpOption {
   private final StringBuilder stringBuilder;

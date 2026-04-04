@@ -6,7 +6,9 @@ import org.junit.Test;
 
 import com.litongjava.tio.utils.commandline.ProcessResult;
 import com.litongjava.tio.utils.environment.EnvUtils;
-import com.litongjava.yt.builder.YtDlpOptionBuilder;
+
+import nexus.io.yt.builder.YtDlpOptionBuilder;
+import nexus.io.yt.utils.YtDlpUtils;
 
 public class YtDlpUtilsTest {
 
