@@ -4,8 +4,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.litongjava.tio.utils.commandline.ProcessResult;
-
+import nexus.io.tio.utils.commandline.ProcessResult;
 import nexus.io.yt.builder.YtDlpOption;
 import nexus.io.yt.builder.YtDlpOptionBuilder;
 import nexus.io.yt.utils.YtDlp;
@@ -17,7 +16,7 @@ public class YtDlpTest {
     String url = "https://www.youtube.com/watch?v=ZwHILfCE0yI";
     YtDlpOption option = new YtDlpOptionBuilder().proxy("http://127.0.0.1:10808").audio().audioFormat("mp3")
         .output("%(title)s.%(ext)s").url(url).build();
-    
+
     try {
       ProcessResult downloadMp3 = YtDlp.execute("ytdlp_logs", option);
       String file = downloadMp3.getPath();
@@ -27,7 +26,5 @@ public class YtDlpTest {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-
   }
-
 }
