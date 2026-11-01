@@ -22,7 +22,13 @@ java -Dserver.port=8080 -jar target/yt-dlp-server-1.0.0.jar
 
 ## Docker
 
-镜像基于 `debian:trixie-slim`，包含 JRE 21、FFmpeg、yt-dlp 独立二进制和 Deno（YouTube 提取所需的 JS 运行时）。yt-dlp 和 Deno 在构建时从 GitHub Releases 下载并校验 SHA-256，支持 amd64 和 arm64。先在仓库根目录打包，再在本目录构建：
+镜像采用多阶段构建，运行层基于 `debian:trixie-slim`，约 490MB（原先直接安装发行版 ffmpeg 时为 1.35GB）：
+
+- JRE 由 `jlink` 裁剪，只保留应用用到的模块，约 56MB。
+- FFmpeg 从源码编译，只包含 yt-dlp 需要的封装格式和编解码器（mp4/m4a/webm 流复制合并、mp3 编码），ffmpeg 与 ffprobe 合计约 8MB。发行版的 ffmpeg 会连带安装 Mesa/LLVM 等 GPU 库，体积主要来自这些库。
+- yt-dlp 独立二进制和 Deno（YouTube 提取所需的 JS 运行时）在构建时从 GitHub Releases 下载并校验 SHA-256，支持 amd64 和 arm64。剩余体积主要是 Deno（约 92MB）和 yt-dlp（约 40MB）。
+
+首次构建需要编译 FFmpeg，耗时几分钟。先在仓库根目录打包，再在本目录构建：
 
 ```sh
 mvn clean package -Pproduction -DskipTests
@@ -36,6 +42,7 @@ docker run -d --name yt-dlp-server -p 8080:8080 -v yt-dlp-download:/app/download
 | `DEBIAN_MIRROR` | `mirrors.ustc.edu.cn` | apt 镜像，海外可用 `deb.debian.org` |
 | `YT_DLP_VERSION` | `latest` | yt-dlp 发行版标签，如 `2026.10.01` |
 | `DENO_VERSION` | `latest` | Deno 发行版标签，如 `v2.5.0` |
+| `FFMPEG_VERSION` / `FFMPEG_COMMIT` | `n8.1.3` / 对应提交 | FFmpeg 标签及其提交，构建时校验两者一致；升级时一起修改 |
 
 运行时可通过环境变量设置 `SERVER_PORT`、`JAVA_OPTS`、`YT_DLP_PROXY`、`YT_DLP_COOKIES`（需挂载 cookies 文件）。下载缓存位于卷 `/app/download`，容器以 uid 1000 运行。健康检查请求不带 id 的 `/mp3`，期望返回 400，不会触发下载。容器内更新 yt-dlp：`docker exec yt-dlp-server java -jar /opt/yt-dlp-server/app.jar --update-yt-dlp`，重建镜像后会恢复为构建时版本。
 
