@@ -18,7 +18,7 @@ public class YtDlpUtils {
   public static final String DOWNLOAD_FOLDER = "download";
 
   public static ProcessResult downloadMp4(String videoId, boolean quiet) throws IOException, InterruptedException {
-    return downloadMp4(videoId, quiet, null);
+    return downloadMp4(videoId, quiet, EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY));
   }
 
   public static ProcessResult downloadMp4(String videoId, boolean quiet, String proxy)
@@ -69,8 +69,8 @@ public class YtDlpUtils {
     String url = String.format(URL_TEMPLATE, videoId);
     String output = folder + "/%(title)s.%(ext)s";
 
-    YtDlpOptionBuilder builder = new YtDlpOptionBuilder().url(url).audio().format(format).output(output);
-    applyProxy(builder, proxy);
+    YtDlpOptionBuilder builder = builder(proxy, EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES))
+        .url(url).noPlaylist().format(format).mergeOutputFormat("mp4").output(output);
     if (quiet) {
       builder.quiet();
     }

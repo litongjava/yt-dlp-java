@@ -16,6 +16,8 @@ public class WebHelloConfig implements BootConfiguration {
     if (r != null) {
       YoutubeDownloadHandler downloadHandler = new YoutubeDownloadHandler();
       r.add("/xyz", downloadHandler);
+      r.add("/mp3", downloadHandler);
+      r.add("/mp4", new YoutubeDownloadHandler(true));
 
       HttpFileDataHandler dataHandler = new HttpFileDataHandler(false);
       r.add("/download/**", dataHandler);

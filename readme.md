@@ -1,6 +1,6 @@
 # yt-dlp-java
 
-通过 Java 调用 [yt-dlp](https://github.com/yt-dlp/yt-dlp)，并提供一个基于 Tio Boot 的 YouTube MP3 下载示例服务。
+通过 Java 调用 [yt-dlp](https://github.com/yt-dlp/yt-dlp)，并提供一个基于 Tio Boot 的 YouTube MP3/MP4 下载示例服务。
 
 | 模块 | 用途 |
 | --- | --- |
@@ -21,7 +21,7 @@ mvn clean package -Pproduction -DskipTests
 
 ## 公开源码
 
-公开前排除日志、cookies、私钥和本地配置，并明确 server 许可证。当前服务缺少鉴权、输入校验和资源限制，不适合直接开放公网。见 [公开仓库检查记录](yt-dlp-server/SECURITY_REVIEW.md)。
+公开前排除日志、cookies、私钥和本地配置，并明确 server 许可证。当前服务缺少鉴权和资源限制，不适合直接开放公网。
 
 库现有许可证为 [Apache-2.0](yt-dlp-java/LICENSE)，server 尚无独立许可证声明。yt-dlp、FFmpeg 和其他依赖分别遵循各自许可证。仅下载和分发你有权处理的内容。
 

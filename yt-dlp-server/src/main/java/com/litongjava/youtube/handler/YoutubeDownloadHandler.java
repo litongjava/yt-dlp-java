@@ -14,6 +14,15 @@ import nexus.io.tio.utils.hutool.FilenameUtils;
 import nexus.io.yt.utils.YtDlpUtils;
 
 public class YoutubeDownloadHandler implements HttpRequestHandler {
+  private final boolean video;
+
+  public YoutubeDownloadHandler() {
+    this(false);
+  }
+
+  public YoutubeDownloadHandler(boolean video) {
+    this.video = video;
+  }
 
   @Override
   public HttpResponse handle(HttpRequest httpRequest) throws Exception {
@@ -21,9 +30,18 @@ public class YoutubeDownloadHandler implements HttpRequestHandler {
     CORSUtils.enableCORS(response);
 
     String videoId = httpRequest.getParam("id");
-    ProcessResult result = YtDlpUtils.downloadMp3(videoId, false);
+    if (videoId == null || !videoId.matches("[A-Za-z0-9_-]{11}")) {
+      response.setStatus(400);
+      return response;
+    }
+    ProcessResult result = video ? YtDlpUtils.downloadMp4(videoId, false)
+        : YtDlpUtils.downloadMp3(videoId, false);
 
     String path = result.getPath();
+    if (path == null || path.isBlank()) {
+      response.setStatus(502);
+      return response;
+    }
     File file = new File(path);
     if (file != null) {
       if (!file.exists()) {

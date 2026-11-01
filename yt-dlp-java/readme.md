@@ -79,7 +79,7 @@ public class ListFormats {
 | 方法 | 说明 |
 | --- | --- |
 | `downloadMp3(videoId, quiet)` | 下载 MP3，返回文件或进程结果 |
-| `downloadMp4(videoId, quiet)` | MP4 封装，当前实现还附带 `-x`，需核验实际输出 |
+| `downloadMp4(videoId, quiet)` | 下载 MP4，选择 MP4 视频和 M4A 音频并合并，支持缓存复用 |
 | `downlodSubtitle(videoId, quiet)` | 人工字幕，保留源码拼写；读取成功时返回字幕文本 |
 | `downloadAutoSubtitle(videoId, quiet)` | 自动字幕 |
 | `getAvailableFormats(url)` | 可用格式 |

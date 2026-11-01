@@ -1,6 +1,6 @@
 # yt-dlp-server
 
-基于 Tio Boot 和 [yt-dlp-java](../yt-dlp-java/readme.md) 的 YouTube MP3 下载示例。请求传入视频 ID，同步下载或复用本地文件，再返回音频，支持缓存协商和 Range 请求。
+基于 Tio Boot 和 [yt-dlp-java](../yt-dlp-java/readme.md) 的 YouTube MP3/MP4 下载示例。请求传入视频 ID，同步下载或复用本地文件，再返回音频或视频，支持缓存协商和 Range 请求。
 
 ## 构建与启动
 
@@ -24,7 +24,8 @@ java -Dserver.port=8080 -jar target/yt-dlp-server-1.0.0.jar
 
 | 路径 | 行为 |
 | --- | --- |
-| `GET /xyz?id=<videoId>` | 同步获取 MP3，参数是视频 ID，不是完整 URL |
+| `GET /xyz?id=<videoId>` 或 `GET /mp3?id=<videoId>` | 同步获取 MP3，保留旧接口兼容 |
+| `GET /mp4?id=<videoId>` | 同步获取 MP4 视频，参数是 11 位视频 ID |
 | `/download/**` | 框架文件处理路由，部署前需审查可读范围 |
 
 将 `VIDEO_ID` 替换为有权下载的视频 ID；Windows PowerShell 使用 `curl.exe` 避免别名歧义：
@@ -34,21 +35,21 @@ curl --fail --show-error "http://127.0.0.1:8080/xyz?id=VIDEO_ID" --output audio.
 curl --fail --show-error -H "Range: bytes=0-1023" "http://127.0.0.1:8080/xyz?id=VIDEO_ID" --output audio.part
 ```
 
-正常返回文件；缓存协商命中可返回 `304`，有效 Range 请求由框架处理为部分内容响应，已有路径对应文件不存在时返回 `404`。下载失败若未返回路径，当前代码可能抛异常，不保证统一 JSON 错误协议。
+正常返回文件；缓存协商命中可返回 `304`，有效 Range 请求由框架处理为部分内容响应，已有路径对应文件不存在时返回 `404`。视频 ID 缺失或格式无效返回 `400`，下载结果没有文件路径返回 `502`；进程异常仍由框架处理，不保证统一 JSON 错误协议。
 
-文件通常保存到 `download/<videoId>/mp3/`，已有 MP3 会复用。日志位于 `logs/` 和下载相关目录；下载缓存没有自动清理机制。当前没有异步任务查询、进度查询或取消接口。
+文件保存到 `download/<videoId>/mp3/` 或 `download/<videoId>/mp4/`，已有对应格式文件会复用。MP4 选择 MP4 视频与 M4A 音频并使用 FFmpeg 合并，回退到站点提供的单文件 MP4；需在 PATH 中安装 FFmpeg。日志位于 `logs/` 和下载相关目录；下载缓存没有自动清理机制。当前没有异步任务查询、进度查询或取消接口。
 
 ## 安全与公开仓库
 
 源码可在排除运行数据并明确许可证后公开；当前示例不适合直接作为匿名公网服务：
 
 - 未实现鉴权、限流、并发上限、任务超时及磁盘配额。
-- `id` 未校验，参与路径和参数拼接，应限定视频 ID 格式并检查最终路径位于下载目录内。
+- `id` 限定为 11 位 YouTube 视频 ID；生产部署仍应做好下载目录权限隔离。
 - 启用了 CORS，应收紧跨域策略；跨域配置不能替代鉴权。
 - `/download/**` 应限制可读目录，排除 cookies、日志和私有文件。
 - 底层库记录完整命令，代理凭据或密码参数可能进入日志。
 
-详见 [公开仓库检查记录](SECURITY_REVIEW.md)。不要提交日志、cookies、`.env`、私钥和下载内容。`.gitignore` 不会移除已跟踪文件或清理历史。
+不要提交日志、cookies、`.env`、私钥和下载内容。`.gitignore` 不会移除已跟踪文件或清理历史。
 
 ## 测试与许可证
 
@@ -73,3 +74,9 @@ java -Dyt.dlp.bin.win=C:/tools/yt-dlp.exe -jar target/yt-dlp-server-1.0.0.jar --
 命令调用官方自更新器，输出更新结果后退出，不启动 HTTP 监听。成功或已是最新版本时退出码为 0，失败为非零。可执行文件缺失时先执行安装。需要 GitHub 网络访问和文件写权限；包管理器安装版本请使用原包管理器升级。更新前停止使用同一可执行文件的下载任务。
 
 该入口使用 Java 系统属性或环境变量设置二进制路径，不加载服务启动阶段的配置文件。更新忽略 yt-dlp 配置文件，不注入 `YT_DLP_PROXY`；如需代理，使用 yt-dlp 支持的系统代理环境变量。
+
+MP4 调用示例（将 VIDEO_ID 替换为有权下载的视频 ID）：
+
+```sh
+curl --fail --show-error "http://127.0.0.1:8080/mp4?id=VIDEO_ID" --output video.mp4
+```
