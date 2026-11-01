@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,27 @@ public class YtDlp {
   public static final String windows_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
   public static final String linux_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux";
   public static final String mac_os_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos";
+
+  /**
+   * Runs the official updater on the configured executable (installs it first if missing).
+   * The caller must check the exit code; package-manager installations may reject self-update.
+   * Run during a maintenance window, without concurrent downloads using this executable.
+   */
+  public static synchronized ProcessResult updateYtDlp() throws IOException, InterruptedException {
+    String executable = Paths.get(downloadYtDlp()).toAbsolutePath().normalize().toString();
+    return runUpdate(List.of(executable));
+  }
+
+  static ProcessResult runUpdate(List<String> executableCommand) throws IOException, InterruptedException {
+    List<String> command = new ArrayList<>(executableCommand);
+    command.add("--ignore-config");
+    command.add("--update");
+    long id = SnowflakeIdUtils.id();
+    File logDir = Files.createDirectories(Paths.get("yt-dlp-task-log", Long.toString(id))).toFile();
+    ProcessResult result = ProcessUtils.execute(logDir, new ProcessBuilder(command));
+    result.setTaskId(id);
+    return result;
+  }
 
   /**
    * Downloads the yt-dlp executable if it does not already exist.
@@ -68,7 +91,7 @@ public class YtDlp {
           log.error("Failed to set executable permission for " + file.getAbsolutePath());
         }
       } else {
-        log.error("Download failed, server returned response code: " + responseCode);
+        throw new IOException("yt-dlp download failed, HTTP " + responseCode);
       }
 
     } finally {

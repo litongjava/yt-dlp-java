@@ -49,3 +49,21 @@ yt-dlp.exe
 download/
 my.txt
 yt-dlp-task-log/
+
+# Local runtime output and credentials
+logs/
+ytdlp_logs/
+*.log
+yt-dlp_linux
+yt-dlp_macos
+.env
+.env.*
+!.env.example
+cookies.txt
+cookies*.txt
+*.cookies.txt
+cookies*.json
+*.pem
+*.key
+*.p12
+*.pfx
