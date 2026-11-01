@@ -3,8 +3,13 @@ package nexus.io.yt.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import nexus.io.tio.utils.commandline.ProcessResult;
 import nexus.io.tio.utils.environment.EnvUtils;
@@ -17,23 +22,44 @@ public class YtDlpUtils {
   public static final String URL_TEMPLATE = "https://www.youtube.com/watch?v=%s";
   public static final String DOWNLOAD_FOLDER = "download";
 
+  /**
+   * Prefer H.264 + M4A (plays everywhere), then any MP4 video (may be AV1), a
+   * single MP4, and finally any streams merged into MP4.
+   */
+  public static final String MP4_FORMAT = "bv*[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba";
+
+  /**
+   * Output name inside the media folder. The title is truncated to 150 bytes so
+   * that long (e.g. CJK) titles do not exceed the 255-byte file-name limit.
+   */
+  public static final String OUTPUT_TEMPLATE = "%(title).150B.%(ext)s";
+
+  private static final Pattern VIDEO_ID = Pattern.compile("[A-Za-z0-9_-]{1,64}");
+  /** yt-dlp intermediate stream files such as {@code title.f137.mp4}. */
+  private static final Pattern INTERMEDIATE = Pattern.compile(".*\\.f\\d+(-[A-Za-z0-9]+)?\\.[^.]+$");
+  private static final String TEMP_FOLDER = ".tmp";
+
+  /** Striped locks: serializes downloads of the same folder without an unbounded map. */
+  private static final ReentrantLock[] LOCKS = new ReentrantLock[64];
+  static {
+    for (int i = 0; i < LOCKS.length; i++) {
+      LOCKS[i] = new ReentrantLock();
+    }
+  }
+
   public static ProcessResult downloadMp4(String videoId, boolean quiet) throws IOException, InterruptedException {
     return downloadMp4(videoId, quiet, EnvUtils.getStr(YtDlpConst.YT_DLP_PROXY));
   }
 
   public static ProcessResult downloadMp4(String videoId, boolean quiet, String proxy)
       throws IOException, InterruptedException {
-    String folderName = "mp4";
-    String format = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4";
-    String suffix = ".mp4";
-    return downloadVideo(videoId, quiet, proxy, format, folderName, suffix);
+    YtDlpOptionBuilder builder = builder(proxy, EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES)).noPlaylist()
+        .format(MP4_FORMAT).mergeOutputFormat("mp4");
+    return downloadMedia(videoId, "mp4", ".mp4", builder, quiet);
   }
 
   public static ProcessResult downloadMp3(String videoId, boolean quiet) throws IOException, InterruptedException {
-    String folderName = "mp3";
-    String format = "mp3";
-    String suffix = ".mp3";
-    return downloadAudio(videoId, quiet, format, folderName, suffix);
+    return downloadAudio(videoId, quiet, "mp3", "mp3", ".mp3");
   }
 
   public static ProcessResult downloadMp3(String proxy, String videoId, boolean quiet)
@@ -44,48 +70,7 @@ public class YtDlpUtils {
 
   public static ProcessResult downloadMp3(String proxy, String cookies, String videoId, boolean quiet)
       throws IOException, InterruptedException {
-    String folderName = "mp3";
-    String format = "mp3";
-    String suffix = ".mp3";
-    return downloadAudio(proxy, cookies, videoId, quiet, format, folderName, suffix);
-  }
-
-  private static ProcessResult downloadVideo(String videoId, boolean quiet, String proxy, String format,
-      String subFolderName, String suffix) throws IOException, InterruptedException {
-    String folder = getDownlaodFolder(videoId, subFolderName);
-
-    File outDir = new File(folder);
-    File[] listFiles = outDir.listFiles();
-
-    if (listFiles != null && listFiles.length > 0) {
-      for (File file : listFiles) {
-        if (file.getName().endsWith(suffix)) {
-          return ProcessResult.fromFile(file, true);
-        }
-      }
-
-    }
-
-    String url = String.format(URL_TEMPLATE, videoId);
-    String output = folder + "/%(title)s.%(ext)s";
-
-    YtDlpOptionBuilder builder = builder(proxy, EnvUtils.getStr(YtDlpConst.YT_DLP_COOKIES))
-        .url(url).noPlaylist().format(format).mergeOutputFormat("mp4").output(output);
-    if (quiet) {
-      builder.quiet();
-    }
-    YtDlpOption options = builder.build();
-
-    ProcessResult result = YtDlp.execute(folder, options);
-    listFiles = outDir.listFiles();
-    if (listFiles != null && listFiles.length > 0) {
-      for (File file : listFiles) {
-        if (file.getName().endsWith(suffix)) {
-          return ProcessResult.fromFile(file, true);
-        }
-      }
-    }
-    return result;
+    return downloadAudio(proxy, cookies, videoId, quiet, "mp3", "mp3", ".mp3");
   }
 
   public static String getDownlaodFolder(String videoId, String subFolderName) {
@@ -95,84 +80,91 @@ public class YtDlpUtils {
 
   public static ProcessResult downloadAudio(String proxy, String cookies, String videoId, boolean quiet, String format,
       String subFolderName, String suffix) throws IOException, InterruptedException {
-    String folder = getDownlaodFolder(videoId, subFolderName);
-
-    File outDir = new File(folder);
-    File[] listFiles = outDir.listFiles();
-
-    if (listFiles != null && listFiles.length > 0) {
-      for (File file : listFiles) {
-        if (file.getName().endsWith(suffix)) {
-          return ProcessResult.fromFile(file, true);
-        }
-      }
-    }
-
-    String url = String.format(URL_TEMPLATE, videoId);
-    String output = folder + "/%(title)s.%(ext)s";
-
-    YtDlpOptionBuilder builder = builder(proxy, cookies);
-
-    builder.url(url).audio().audioFormat(format).output(output);
-    if (quiet) {
-      builder.quiet();
-    }
-
-    YtDlpOption options = builder.build();
-
-    ProcessResult result = YtDlp.execute(folder, options);
-    // Long taskId = result.getTaskId();
-    listFiles = outDir.listFiles();
-    if (listFiles != null && listFiles.length > 0) {
-      for (File file : listFiles) {
-        if (file.getName().endsWith(suffix)) {
-          // file.renameTo(new File(folder, taskId + suffix));
-          return ProcessResult.fromFile(file, true);
-        }
-      }
-    }
-    return result;
+    YtDlpOptionBuilder builder = builder(proxy, cookies).noPlaylist().audio().audioFormat(format);
+    return downloadMedia(videoId, subFolderName, suffix, builder, quiet);
   }
 
   public static ProcessResult downloadAudio(String videoId, boolean quiet, String format, String subFolderName,
       String suffix) throws IOException, InterruptedException {
+    YtDlpOptionBuilder builder = builder().noPlaylist().audio().audioFormat(format);
+    return downloadMedia(videoId, subFolderName, suffix, builder, quiet);
+  }
+
+  /**
+   * Returns the cached file or downloads it. Concurrent calls for the same
+   * folder are serialized; intermediate files are written to a temporary folder
+   * so that an incomplete download is never returned as a result.
+   *
+   * @return a result with {@code path} set when the file exists, otherwise the
+   *         yt-dlp process result (check exit code and stderr).
+   */
+  private static ProcessResult downloadMedia(String videoId, String subFolderName, String suffix,
+      YtDlpOptionBuilder builder, boolean quiet) throws IOException, InterruptedException {
+    if (videoId == null || !VIDEO_ID.matcher(videoId).matches()) {
+      throw new IllegalArgumentException("Invalid video id: " + videoId);
+    }
     String folder = getDownlaodFolder(videoId, subFolderName);
-
     File outDir = new File(folder);
-    File[] listFiles = outDir.listFiles();
 
-    if (listFiles != null && listFiles.length > 0) {
-      for (File file : listFiles) {
-        if (file.getName().endsWith(suffix)) {
-          return ProcessResult.fromFile(file, true);
-        }
+    ReentrantLock lock = LOCKS[Math.floorMod(folder.hashCode(), LOCKS.length)];
+    lock.lockInterruptibly();
+    try {
+      File cached = findMedia(outDir, suffix);
+      if (cached != null) {
+        return ProcessResult.fromFile(cached, true);
+      }
+
+      // A relative temp path is resolved against home by yt-dlp.
+      Path tempDir = Paths.get(folder, TEMP_FOLDER);
+      builder.paths("home:" + folder).paths("temp:" + TEMP_FOLDER).output(OUTPUT_TEMPLATE)
+          .url(String.format(URL_TEMPLATE, videoId));
+      if (quiet) {
+        builder.quiet();
+      }
+
+      ProcessResult result;
+      try {
+        result = YtDlp.execute(builder.build());
+      } finally {
+        deleteRecursively(tempDir);
+      }
+
+      File file = findMedia(outDir, suffix);
+      if (file != null) {
+        ProcessResult fileResult = ProcessResult.fromFile(file, false);
+        fileResult.setTaskId(result.getTaskId());
+        fileResult.setExitCode(result.getExitCode());
+        fileResult.setElapsed(result.getElapsed());
+        return fileResult;
+      }
+      return result;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /** Finds a completed media file, ignoring logs, hidden and intermediate files. */
+  static File findMedia(File outDir, String suffix) {
+    File[] files = outDir.listFiles();
+    if (files == null) {
+      return null;
+    }
+    for (File file : files) {
+      String name = file.getName();
+      if (file.isFile() && name.endsWith(suffix) && !name.startsWith(".") && !INTERMEDIATE.matcher(name).matches()) {
+        return file;
       }
     }
+    return null;
+  }
 
-    String url = String.format(URL_TEMPLATE, videoId);
-    String output = folder + "/%(title)s.%(ext)s";
-
-    YtDlpOptionBuilder builder = builder();
-
-    builder.url(url).audio().audioFormat(format).output(output);
-    if (quiet) {
-      builder.quiet();
+  private static void deleteRecursively(Path dir) throws IOException {
+    if (!Files.exists(dir)) {
+      return;
     }
-
-    YtDlpOption options = builder.build();
-
-    ProcessResult result = YtDlp.execute(folder, options);
-    // Long taskId = result.getTaskId();
-    listFiles = outDir.listFiles();
-    if (listFiles != null && listFiles.length > 0) {
-      for (File file : listFiles) {
-        if (file.getName().endsWith(suffix)) {
-          // file.renameTo(new File(folder, taskId + suffix));
-          return ProcessResult.fromFile(file, true);
-        }
-      }
+    try (Stream<Path> walk = Files.walk(dir)) {
+      walk.sorted(Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
     }
-    return result;
   }
 
   public static ProcessResult downlodSubtitle(String videoId, boolean quiet) throws IOException, InterruptedException {

@@ -5,7 +5,7 @@
 ## 环境与安装
 
 - JDK 21：父 POM 统一配置 `maven.compiler.release=21`。
-- Maven，以及可解析的 `nexus.io:tio-utils:2.1.0`。
+- Maven，以及可解析的 `nexus.io:tio-utils:2.1.8`。
 - FFmpeg/ffprobe：提取音频、合并音视频和部分字幕转换需要，建议加入 PATH。
 - 能访问目标站点的网络。部分站点需要 cookies 或 JavaScript 运行时。
 
@@ -47,7 +47,7 @@ public class DownloadAudio {
 }
 ```
 
-文件保存到工作目录的 `download/<videoId>/mp3/`。工具方法复用已有对应后缀文件，因此再次调用不一定下载。`quiet` 控制 yt-dlp 输出，不代表关闭库日志。
+文件保存到工作目录的 `download/<videoId>/mp3/`，标题按 150 字节截断以避免文件名过长。中间文件写入同目录下的 `.tmp/`，完成后才移入，结束时清理，因此不会把未完成的文件当作结果。同一视频同一格式的并发调用会串行执行，后到的调用直接复用结果。yt-dlp 的 stdout/stderr 写入 `yt-dlp-task-log/<taskId>/`，不再混入下载目录。工具方法复用已有对应后缀文件，因此再次调用不一定下载。`quiet` 控制 yt-dlp 输出，不代表关闭库日志。
 
 ## 自定义参数
 
@@ -70,7 +70,7 @@ public class ListFormats {
 }
 ```
 
-`YtDlpUtils.builder()` 应用代理、cookies 和 Deno 配置；直接 `new YtDlpOptionBuilder()` 不会自动应用。参数以两个空格分隔，通过 `ProcessBuilder` 执行，不经过 shell。不要额外加 shell 引号；含连续两个空格的参数存在被拆分的限制，不应直接传入不可信命令字符串。
+`YtDlpUtils.builder()` 应用代理、cookies 和 Deno 配置；直接 `new YtDlpOptionBuilder()` 不会自动应用。每个选项和值作为独立参数通过 `ProcessBuilder` 执行，不经过 shell，值中的空格原样保留，不要额外加 shell 引号。`YtDlp.execute(String)` 等字符串入口仅为兼容保留（按两个空格拆分），已标记为废弃。
 
 ## 常用 API
 
@@ -79,7 +79,7 @@ public class ListFormats {
 | 方法 | 说明 |
 | --- | --- |
 | `downloadMp3(videoId, quiet)` | 下载 MP3，返回文件或进程结果 |
-| `downloadMp4(videoId, quiet)` | 下载 MP4，选择 MP4 视频和 M4A 音频并合并，支持缓存复用 |
+| `downloadMp4(videoId, quiet)` | 下载 MP4，优先 H.264 + M4A（兼容性最好，YouTube 上最高约 1080p），无则回退其他 MP4 视频或合并为 MP4，支持缓存复用 |
 | `downlodSubtitle(videoId, quiet)` | 人工字幕，保留源码拼写；读取成功时返回字幕文本 |
 | `downloadAutoSubtitle(videoId, quiet)` | 自动字幕 |
 | `getAvailableFormats(url)` | 可用格式 |
@@ -115,9 +115,9 @@ public class ListFormats {
 mvn -f yt-dlp-java/pom.xml test -Dtest=YtDlpOptionBuilderTest
 ```
 
-其他现有测试调用真实网站或本机代理，不宜直接用于离线 CI。失败时检查 FFmpeg、yt-dlp 版本、网络和 cookies，并查看 `download/` 或 `yt-dlp-task-log/` 下的日志。返回结果不保证包含文件路径，应先检查再使用。
+`YtDlpUtilsOfflineTest` 与上述测试同样不访问外网。其他现有测试调用真实网站或本机代理，不宜直接用于离线 CI。失败时检查 FFmpeg、yt-dlp 版本、网络和 cookies，并查看 `download/` 或 `yt-dlp-task-log/` 下的日志。返回结果不保证包含文件路径，应先检查再使用。
 
-完整命令会写入日志，密码参数、带凭据的代理 URL 可能因此泄漏。不要提交日志和 cookies。
+执行的命令会写入日志，其中代理 URL 中的用户信息及 `--password` 等参数的值会被替换为 `****`。日志仍可能包含 cookies 路径等本地信息，不要提交日志和 cookies。
 
 ## 许可证
 

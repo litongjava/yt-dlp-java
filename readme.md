@@ -15,7 +15,7 @@
 mvn clean package -Pproduction -DskipTests
 ```
 
-需要能解析 `nexus.io:tio-utils:2.1.0`、`nexus.io:tio-boot:2.1.0` 及其依赖。如果无法解析，请先从对应 t-io 源码安装匹配版本，或配置提供这些依赖的 Maven 仓库。当前坐标不代表已经发布到 Maven Central。
+需要能解析 `nexus.io:tio-utils:2.1.8`、`nexus.io:tio-boot:2.1.8` 及其依赖。如果无法解析，请先从对应 t-io 源码安装匹配版本，或配置提供这些依赖的 Maven 仓库。当前坐标不代表已经发布到 Maven Central。
 
 下载测试会访问外网，因此以上命令跳过测试。自动安装 yt-dlp 需要访问 GitHub Releases，实际下载还需能访问目标站点。
 
@@ -33,7 +33,7 @@ mvn clean install -Pproduction -DskipTests
 # 仅构建 server 及其依赖模块
 mvn -pl yt-dlp-server -am package -Pproduction -DskipTests
 # 离线行为测试（不访问视频站点）
-mvn test "-Dtest=YtDlpOptionBuilderTest,YtDlpUpdateTest" "-Dsurefire.failIfNoSpecifiedTests=false"
+mvn test "-Dtest=YtDlpOptionBuilderTest,YtDlpUpdateTest,YtDlpUtilsOfflineTest,DownloadFileHandlerTest,ContentDispositionTest" "-Dsurefire.failIfNoSpecifiedTests=false"
 ```
 
 ## 更新 yt-dlp

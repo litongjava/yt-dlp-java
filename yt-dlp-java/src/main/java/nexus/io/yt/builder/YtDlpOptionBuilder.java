@@ -1,24 +1,28 @@
 package nexus.io.yt.builder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * YtDlpOptionBuilder is a builder class for constructing command-line options
- * for yt-dlp. It uses a StringBuilder to accumulate options and parameters.
+ * for yt-dlp. Each option and value is kept as a separate argument, so values
+ * containing spaces are passed to the process unchanged.
  */
 public class YtDlpOptionBuilder {
 
-  // StringBuilder to accumulate command-line options separated by two spaces.
-  private final StringBuilder stringBuilder = new StringBuilder();
+  // Accumulated command-line arguments, without the executable and the URL.
+  private final List<String> args = new ArrayList<>();
 
   // URL of the video to process.
   private String url = "";
 
   /**
-   * Appends a command-line token and two spaces as a separator.
+   * Appends a single command-line argument.
    *
-   * @param str The token to append.
+   * @param str The argument to append.
    */
   private void append(String str) {
-    stringBuilder.append(str).append("  ");
+    args.add(str);
   }
 
   private void appendOption(String option, String value) {
@@ -44,7 +48,7 @@ public class YtDlpOptionBuilder {
    * @return A new YtDlpOption instance.
    */
   public YtDlpOption build() {
-    return new YtDlpOption(stringBuilder, url);
+    return new YtDlpOption(args, url);
   }
 
   // General Options
@@ -159,7 +163,7 @@ public class YtDlpOptionBuilder {
   }
 
   public YtDlpOptionBuilder jsRuntimesDeno(String runtime) {
-    appendOption("--js-runtimes ", "deno:" + runtime);
+    appendOption("--js-runtimes", "deno:" + runtime);
     return this;
   }
 
