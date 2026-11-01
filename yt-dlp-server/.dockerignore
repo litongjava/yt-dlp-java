@@ -1,0 +1,4 @@
+**
+!Dockerfile
+!target/
+!target/yt-dlp-server-1.0.0.jar
